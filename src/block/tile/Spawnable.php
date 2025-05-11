@@ -30,19 +30,17 @@ use pocketmine\nbt\tag\IntTag;
 use pocketmine\nbt\tag\StringTag;
 use pocketmine\network\mcpe\convert\TypeConverter;
 use pocketmine\network\mcpe\protocol\types\CacheableNbt;
-use function count;
 use function get_class;
-use function spl_object_id;
 
 abstract class Spawnable extends Tile{
-	/** @phpstan-var array<int, CacheableNbt<\pocketmine\nbt\tag\CompoundTag>|null> */
-	private array $spawnCompoundCaches = [];
+	/** @phpstan-var CacheableNbt<CompoundTag>|null */
+	private ?CacheableNbt $spawnCompoundCache = null;
 
 	/**
 	 * @deprecated
 	 */
 	public function isDirty() : bool{
-		return count($this->spawnCompoundCaches) === 0;
+		return $this->spawnCompoundCache === null;
 	}
 
 	/**
@@ -53,7 +51,7 @@ abstract class Spawnable extends Tile{
 	}
 
 	public function clearSpawnCompoundCache() : void{
-		$this->spawnCompoundCaches = [];
+		$this->spawnCompoundCache = null;
 	}
 
 	/**
@@ -76,10 +74,14 @@ abstract class Spawnable extends Tile{
 	 * Returns encoded NBT (varint, little-endian) used to spawn this tile to clients. Uses cache where possible,
 	 * populates cache if it is null.
 	 *
-	 * @phpstan-return CacheableNbt<\pocketmine\nbt\tag\CompoundTag>
+	 * @phpstan-return CacheableNbt<CompoundTag>
 	 */
 	final public function getSerializedSpawnCompound(TypeConverter $typeConverter) : CacheableNbt{
-		return $this->spawnCompoundCaches[spl_object_id($typeConverter)] ??= new CacheableNbt($this->getSpawnCompound($typeConverter));
+		if($this->spawnCompoundCache === null){
+			$this->spawnCompoundCache = new CacheableNbt($this->getSpawnCompound($typeConverter));
+		}
+
+		return $this->spawnCompoundCache;
 	}
 
 	final public function getSpawnCompound(TypeConverter $typeConverter) : CompoundTag{
