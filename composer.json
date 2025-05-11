@@ -100,7 +100,7 @@
       },
       {
          "type": "vcs",
-         "url":  "git@github.com:NetherGamesMC/BedrockData.git"
+         "url":  "git@github.com:BlockBrawn/BedrockData.git"
       }
    ]
 }
